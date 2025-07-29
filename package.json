@@ -1,6 +1,6 @@
 {
   "name": "axios-inference-polling",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A package for polling the inference status until it is completed.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
