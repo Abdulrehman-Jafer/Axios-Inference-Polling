@@ -43,10 +43,12 @@ export class Inference {
     create_prediction_url,
     payload,
     config,
+    onError,
   }: {
     create_prediction_url: string;
     payload: Y;
     config?: AxiosRequestConfig;
+    onError?: (error: any) => any;
   }) {
     try {
       const { data } = await this.axios.post<T & { status: Status }>(
@@ -58,6 +60,7 @@ export class Inference {
       this.emitEvent(data, "CREATE_PREDICTION");
       return data;
     } catch (error) {
+      if (onError) onError(error);
       throw new Error(
         `Error while creating prediction, error: ${JSON.stringify(error)}`
       );
@@ -69,11 +72,13 @@ export class Inference {
     prediction_status_url,
     payload,
     config,
+    onError,
   }: {
     create_prediction_url: string;
     payload: Y;
     config?: AxiosRequestConfig;
     prediction_status_url: string;
+    onError?: (error: any) => any;
   }) {
     let prediction = await this.createInferenceRequest<T, Y>({
       create_prediction_url,
@@ -93,6 +98,8 @@ export class Inference {
         );
         prediction = data;
       } catch (error) {
+        if (onError) onError(error);
+
         throw new Error(
           `Error while getting prediction status, error: ${JSON.stringify(
             error
