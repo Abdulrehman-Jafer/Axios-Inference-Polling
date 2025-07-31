@@ -1,6 +1,7 @@
 import { Axios, AxiosRequestConfig } from "axios";
 
 type Status = "starting" | "processing" | "succeeded" | "failed" | "canceled";
+type Events = "CREATE_PREDICTION" | "UPDATE_PREDICTION";
 
 export class Inference {
   private axios: Axios;
@@ -10,20 +11,20 @@ export class Inference {
     this.subscribers = [];
   }
 
-  subscribeToEvents(handler: (event: any) => any) {
+  public subscribeToEvents(handler: (event: any, type: Events) => any) {
     if (typeof handler !== "function")
       throw new Error("Not a valid subscriber function");
     this.subscribers = [...this.subscribers, handler];
   }
 
-  unsubscribeToEvents(handler: (event: any) => any) {
+  public unsubscribeToEvents(handler: (event: any, type: Events) => any) {
     if (typeof handler !== "function")
       throw new Error("Not a valid subscriber function");
     this.subscribers = this.subscribers.filter((sub) => sub !== handler);
   }
 
-  emitEvent<T>(event: T) {
-    this.subscribers.forEach((sub) => sub(event));
+  private emitEvent<T>(event: T, type: Events) {
+    this.subscribers.forEach((sub) => sub(event, type));
   }
 
   async createInferenceRequest<T, Y>({
@@ -40,7 +41,7 @@ export class Inference {
       payload,
       config
     );
-    this.emitEvent(data);
+    this.emitEvent(data, "CREATE_PREDICTION");
     return data;
   }
 
@@ -72,10 +73,10 @@ export class Inference {
 
       prediction = data;
 
-      this.emitEvent(prediction);
+      this.emitEvent(prediction, "UPDATE_PREDICTION");
     }
 
-    this.emitEvent(prediction);
+    this.emitEvent(prediction, "UPDATE_PREDICTION");
     return prediction;
   }
 }
