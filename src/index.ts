@@ -1,7 +1,12 @@
 import { Axios, AxiosRequestConfig } from "axios";
 
-type Status = "starting" | "processing" | "succeeded" | "failed" | "canceled";
-type Events = "CREATE_PREDICTION" | "UPDATE_PREDICTION";
+export type Status =
+  | "starting"
+  | "processing"
+  | "succeeded"
+  | "failed"
+  | "canceled";
+export type InfereceEventType = "CREATE_PREDICTION" | "UPDATE_PREDICTION";
 
 export class Inference {
   private axios: Axios;
@@ -11,19 +16,23 @@ export class Inference {
     this.subscribers = [];
   }
 
-  public subscribeToEvents(handler: (event: any, type: Events) => any) {
+  public subscribeToEvents(
+    handler: (event: any, type: InfereceEventType) => any
+  ) {
     if (typeof handler !== "function")
       throw new Error("Not a valid subscriber function");
     this.subscribers = [...this.subscribers, handler];
   }
 
-  public unsubscribeToEvents(handler: (event: any, type: Events) => any) {
+  public unsubscribeToEvents(
+    handler: (event: any, type: InfereceEventType) => any
+  ) {
     if (typeof handler !== "function")
       throw new Error("Not a valid subscriber function");
     this.subscribers = this.subscribers.filter((sub) => sub !== handler);
   }
 
-  private emitEvent<T>(event: T, type: Events) {
+  private emitEvent<T>(event: T, type: InfereceEventType) {
     this.subscribers.forEach((sub) => sub(event, type));
   }
 
