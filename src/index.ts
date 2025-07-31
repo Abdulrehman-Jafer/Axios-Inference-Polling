@@ -11,8 +11,8 @@ export type InfereceEventType = "CREATE_PREDICTION" | "UPDATE_PREDICTION";
 export class Inference {
   private axios: Axios;
   private subscribers: any[];
-  constructor(server_url: string) {
-    this.axios = new Axios({ baseURL: server_url });
+  constructor() {
+    this.axios = new Axios();
     this.subscribers = [];
   }
 
@@ -37,16 +37,16 @@ export class Inference {
   }
 
   async createInferenceRequest<T, Y>({
-    url,
+    create_prediction_url,
     payload,
     config,
   }: {
-    url: string;
+    create_prediction_url: string;
     payload: Y;
     config?: AxiosRequestConfig;
   }) {
     const { data } = await this.axios.post<T & { status: Status }>(
-      url,
+      create_prediction_url,
       payload,
       config
     );
@@ -55,18 +55,18 @@ export class Inference {
   }
 
   async pollInferenceRequest<T, Y>({
-    url,
+    create_prediction_url,
     prediction_status_url,
     payload,
     config,
   }: {
-    url: string;
+    create_prediction_url: string;
     payload: Y;
     config?: AxiosRequestConfig;
     prediction_status_url: string;
   }) {
     let prediction = await this.createInferenceRequest<T, Y>({
-      url,
+      create_prediction_url,
       payload,
       config,
     });
