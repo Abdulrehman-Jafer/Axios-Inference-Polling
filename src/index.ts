@@ -8,6 +8,9 @@ export type Status =
   | "canceled";
 export type InfereceEventType = "CREATE_PREDICTION" | "UPDATE_PREDICTION";
 
+const sleep = (timeInMs: number) =>
+  new Promise((resolve) => setTimeout(resolve, timeInMs));
+
 export class Inference {
   private axios: Axios;
   private subscribers: any[];
@@ -45,13 +48,20 @@ export class Inference {
     payload: Y;
     config?: AxiosRequestConfig;
   }) {
-    const { data } = await this.axios.post<T & { status: Status }>(
-      create_prediction_url,
-      payload,
-      config
-    );
-    this.emitEvent(data, "CREATE_PREDICTION");
-    return data;
+    try {
+      const { data } = await this.axios.post<T & { status: Status }>(
+        create_prediction_url,
+        payload,
+        config
+      );
+
+      this.emitEvent(data, "CREATE_PREDICTION");
+      return data;
+    } catch (error) {
+      throw new Error(
+        `Error while creating prediction, error: ${JSON.stringify(error)}`
+      );
+    }
   }
 
   async pollInferenceRequest<T, Y>({
@@ -76,11 +86,19 @@ export class Inference {
       prediction.status !== "failed" &&
       prediction.status !== "canceled"
     ) {
-      const { data } = await this.axios.get(
-        `/${prediction_status_url}/${(prediction as any).id}`
-      );
-
-      prediction = data;
+      await sleep(2000);
+      try {
+        const { data } = await this.axios.get(
+          `/${prediction_status_url}/${(prediction as any).id}`
+        );
+        prediction = data;
+      } catch (error) {
+        throw new Error(
+          `Error while getting prediction status, error: ${JSON.stringify(
+            error
+          )}`
+        );
+      }
 
       this.emitEvent(prediction, "UPDATE_PREDICTION");
     }
